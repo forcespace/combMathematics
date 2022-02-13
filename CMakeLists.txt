@@ -7,4 +7,5 @@ find_package(Boost 1.74.0 REQUIRED COMPONENTS filesystem)
 include_directories(${Boost_INCLUDE_DIRS})
 
 add_executable(narayanaAlgorithm labs/01/1.1/main.cpp)
+add_executable(randomPermutations labs/01/1.3/main.cpp)
 add_executable(combMathematics main.cpp)
