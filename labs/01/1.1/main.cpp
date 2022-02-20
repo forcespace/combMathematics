@@ -33,13 +33,14 @@ void GetSort(std::vector<size_t> &v)
     std::sort(v.begin(), v.end());
     do
     {
-        copy(v.begin(), v.end(), std::__1::ostream_iterator<size_t>(std::cout, " "));
-        std::cout << std::endl;
+//        copy(v.begin(), v.end(), std::__1::ostream_iterator<size_t>(std::cout, " "));
+//        std::cout << std::endl;
     }
     while (std::next_permutation(v.begin(), v.end()));
 }
 
 /*
  * 7 - 0.18s
- * 10 - 17s
+ * 10 - 0.36s
+ * 12 - 48s
  */
