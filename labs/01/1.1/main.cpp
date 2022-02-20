@@ -9,7 +9,7 @@ double GetTimer(std::vector<size_t> &v);
 
 int main()
 {
-    std::vector<size_t> v = {7, 1, 12, 5, 9, 20, 15};
+    std::vector<size_t> v = {7, 1, 12, 5, 9, 20, 15, 2, 14, 3, 11, 4, 8};
     double duration = GetTimer(v);
     std::cout << duration << std::endl;
 
@@ -40,7 +40,13 @@ void GetSort(std::vector<size_t> &v)
 }
 
 /*
- * 7 - 0.18s
- * 10 - 0.36s
- * 12 - 48s
+ * Практические значения:
+ * 7 - 0.000454s
+ * 10 - 0.352997s
+ * 11 - 3.77882s
+ * 12 - 43.5028s
+ * 13 - 565.948s
+ * Расчетные значения:
+ * 13 - 522s
+ * 50 - 2,27044e46 тысячелетий
  */
