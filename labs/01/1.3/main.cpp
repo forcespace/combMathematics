@@ -1,52 +1,48 @@
+#include <algorithm>
 #include <iostream>
 #include <vector>
-#include <ctime>
-#include <algorithm>
-#include <iterator>
+#include <boost/timer.hpp>
 
-void PrintItems(std::vector<int> items);
-
-std::vector<int> SetItems(int maxItems);
-
-void RandomSwap(int maxItems, std::vector<int> &items);
+void getRandom(std::vector<int> &randomVector);
+void print(std::vector<int> &randomVector);
 
 int main()
 {
-    const int maxItems = 10;
-    std::vector<int> items = SetItems(maxItems);
+    std::cout << std::endl;
+    std::cout << "Алгоритм порождения случайной перестановки" << std::endl;
 
-    PrintItems(items);
+    srand(time(nullptr));
+    std::vector<int> randomVector = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9};
 
-    RandomSwap(maxItems, items);
+    std::cout << "input :" << std::endl;
+    print(randomVector);
 
-    PrintItems(items);
+    getRandom(randomVector);
+
+    std::cout << std::endl;
+    std::cout << std::endl;
+    std::cout << "output :" << std::endl;
+    print(randomVector);
+
+    std::cout << std::endl;
 
     return 0;
 }
 
-void RandomSwap(const int maxItems, std::vector<int> &items)
+void getRandom(std::vector<int> &randomVector)
 {
-    for (int i = 0; i < maxItems; ++i)
+    int randomValue = 0;
+    for (int i = 0; i < randomVector.size(); ++i)
     {
-        const int randomPosition = rand() % (maxItems - 1);
-        std::swap(items.at(i), items.at(randomPosition));
+        randomValue = rand() % randomVector.size();
+        std::swap(randomVector[i], randomVector[randomValue]);
     }
 }
 
-std::vector<int> SetItems(const int maxItems)
+void print(std::vector<int> &randomVector)
 {
-    std::vector<int> items(maxItems);
-    srand(time(nullptr));
-
-    for (int i = 0; i < maxItems; i++)
+    for (int i : randomVector)
     {
-        items[i] = i + 1;
+        std::cout << i;
     }
-    return items;
-}
-
-void PrintItems(std::vector<int> items)
-{
-    copy(items.begin(), items.end(), std::ostream_iterator<int>(std::cout, " "));
-    std::cout << std::endl;
 }
