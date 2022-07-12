@@ -11,7 +11,6 @@ struct PointsMap
     int endPoint;
 };
 
-
 std::set<int> getResultCutVertices(std::vector<std::vector<int>> graph, int root, std::vector<int> tin, std::vector<int> tout, std::vector<PointsMap> reverseEdges);
 
 bool isEdgeInReverse(int first, int second, std::vector<PointsMap> &reverseEdges, std::vector<int> tin);
@@ -30,7 +29,9 @@ void printStack(std::stack<int> stack)
 
     int temp = stack.top();
     stack.pop();
+
     printStack(stack);
+
     std::cout << temp << ' ';
     stack.push(temp);
 }
@@ -51,7 +52,34 @@ std::vector<std::vector<int>> getMatrix(std::ifstream &input)
         matrix[primaryPoint][secondaryPoint] = step;
         matrix[secondaryPoint][primaryPoint] = step;
     }
+
     return matrix;
+}
+
+void initEdges(std::vector<PointsMap> &reverseEdges, PointsMap &edge, int parent, int vertex, int i, std::vector<int> &tin, std::vector<int> &tout, std::vector<bool> &visited)
+{
+    if (visited[i] && tin[vertex] - tin[i] > 1 && !tout[parent] && i != parent)
+    {
+        if (i < vertex)
+        {
+            edge.startPoint = i;
+        }
+        else
+        {
+            edge.startPoint = vertex;
+        }
+
+        if (i > vertex)
+        {
+            edge.endPoint = i;
+        }
+        else
+        {
+            edge.endPoint = vertex;
+        }
+
+        reverseEdges.push_back(edge);
+    }
 }
 
 void iterateGraph(const std::vector<std::vector<int>> &graph, std::vector<int> &tin, std::vector<int> &tout, std::vector<PointsMap> &reverseEdges, int graphSize, int timer, std::vector<bool> &visited, PointsMap &edge, int parent, std::stack<int> &stack, bool isPath)
@@ -78,12 +106,8 @@ void iterateGraph(const std::vector<std::vector<int>> &graph, std::vector<int> &
                     isPath = true;
                     break;
                 }
-                if (visited[i] && tin[vertex] - tin[i] > 1 && !tout[parent] && i != parent)
-                {
-                    edge.startPoint = (i < vertex) ? i : vertex;
-                    edge.endPoint = (i > vertex) ? i : vertex;
-                    reverseEdges.push_back(edge);
-                }
+
+                initEdges(reverseEdges, edge, parent, vertex, i, tin, tout, visited);
             }
         }
 
@@ -126,6 +150,64 @@ std::set<int> getVertices(const std::vector<std::vector<int>>& graph)
     return cutVertices;
 }
 
+void getRootVertices(const std::vector<std::vector<int>> &graph, const std::vector<int> &tin, const std::vector<int> &tout, std::set<int> &weedingVertices, int graphSize, int vertexStep, int vertex)
+{
+    bool isRootVertices = false;
+
+    for (int i = 1; i < graphSize; i++)
+    {
+        if (graph[vertex][i] == vertexStep && tin[i] - vertexStep == tin[vertex] && tout[i] + vertexStep == tout[vertex])
+        {
+            isRootVertices = true;
+        }
+    }
+
+    if (!isRootVertices)
+    {
+        weedingVertices.insert(vertex);
+    }
+}
+
+void initChild(const std::vector<std::vector<int>> &graph, std::vector<int> &tin, const std::vector<int> &tout, std::vector<PointsMap> &reverseEdges, int graphSize, int vertex, int &branches, int &edges, int &parentOfHangingVertice)
+{
+    branches= 0;
+    edges= 0;
+
+    for (int child = 1; child < graphSize; child++)
+    {
+        if (graph[vertex][child] == 1)
+        {
+            edges = ++edges;
+            parentOfHangingVertice = child;
+
+            if (tin[vertex] < tin[child] && tout[vertex] > tout[child] && !isEdgeInReverse(vertex, child, reverseEdges, tin))
+            {
+                branches++;
+                bool isReverseEdge = false;
+
+                for (int descendant = 1; descendant < graphSize; ++descendant)
+                {
+                    if (tin[child] <= tin[descendant] && tout[child] >= tout[descendant])
+                    {
+                        for (auto &edge: reverseEdges)
+                        {
+                            if (edge.endPoint == descendant && tin[edge.startPoint] < tin[vertex])
+                            {
+                                isReverseEdge = true;
+                            }
+                        }
+                    }
+                }
+
+                if (isReverseEdge)
+                {
+                    --branches;
+                }
+            }
+        }
+    }
+}
+
 std::set<int> getResultCutVertices(std::vector<std::vector<int>> graph, int root, std::vector<int> tin, std::vector<int> tout, std::vector<PointsMap> reverseEdges)
 {
     std::set<int> weedingVertices;
@@ -142,67 +224,28 @@ std::set<int> getResultCutVertices(std::vector<std::vector<int>> graph, int root
     {
         if (vertex == root)
         {
-            bool isRootVertices = false;
-            for (int i = 1; i < graphSize; i++)
-            {
-                if (graph[vertex][i] == vertexStep && tin[i] - vertexStep == tin[vertex] && tout[i] + vertexStep == tout[vertex])
-                {
-                    isRootVertices = true;
-                }
-            }
-            if (!isRootVertices)
-            {
-                weedingVertices.insert(vertex);
-            }
+            getRootVertices(graph, tin, tout, weedingVertices, graphSize, vertexStep, vertex);
 
             continue;
         }
 
-        int branches = 0;
-        int edges = 0;
+        int branches;
+        int edges;
         int parentOfHangingVertice;
 
-        for (int child = 1; child < graphSize; child++)
-        {
-            if (graph[vertex][child] == 1)
-            {
-                edges = ++edges;
-                parentOfHangingVertice = child;
-
-                if (tin[vertex] < tin[child] && tout[vertex] > tout[child] && !isEdgeInReverse(vertex, child, reverseEdges, tin))
-                {
-                    branches++;
-                    bool isReverseEdge = false;
-                    for (int descendant = 1; descendant < graphSize; ++descendant)
-                    {
-                        if (tin[child] <= tin[descendant] && tout[child] >= tout[descendant])
-                        {
-                            for (auto &edge: reverseEdges)
-                            {
-                                if (edge.endPoint == descendant && tin[edge.startPoint] < tin[vertex])
-                                {
-                                    isReverseEdge = true;
-                                }
-                            }
-                        }
-                    }
-                    if (isReverseEdge)
-                    {
-                        --branches;
-                    }
-                }
-            }
-        }
+        initChild(graph, tin, tout, reverseEdges, graphSize, vertex, branches, edges, parentOfHangingVertice);
 
         if (edges == 1)
         {
             weedingVertices.insert(parentOfHangingVertice);
         }
+
         if (branches != 0)
         {
             weedingVertices.insert(vertex);
         }
     }
+
     return weedingVertices;
 }
 
@@ -210,7 +253,6 @@ bool isEdgeInReverse(int first, int second, std::vector<PointsMap> &reverseEdges
 {
     int start = tin[first] < tin[second] ? first : second;
     int end = tin[first] > tin[second] ? first : second;
-
     bool edgeInReverse = false;
 
     for (auto x: reverseEdges)
@@ -220,6 +262,7 @@ bool isEdgeInReverse(int first, int second, std::vector<PointsMap> &reverseEdges
             edgeInReverse = true;
         }
     }
+
     return edgeInReverse;
 }
 
