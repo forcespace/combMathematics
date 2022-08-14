@@ -18,7 +18,7 @@ struct Args
     std::string inputFile;
 };
 
-std::optional<Args> ParseArgs(int argc, char* argv[])
+std::optional<Args> parseArgs(int argc, char* argv[])
 {
     if (argc != 2)
     {
@@ -146,7 +146,7 @@ void printMatrix(const std::vector<std::vector<float>>& matrix)
 
 int main(int argc, char* argv[])
 {
-    auto args = ParseArgs(argc, argv);
+    auto args = parseArgs(argc, argv);
     if (!args)
     {
         std::cout << programMessage[0] << std::endl;
